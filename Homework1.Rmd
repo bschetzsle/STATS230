@@ -32,3 +32,8 @@ result = microbenchmark(matrix_prod(A,B,x,1), matrix_prod(A,B,x,2))
 
 boxplot(result, main="Benchmark Result", names=c("1", "2"), xlab="Method", ylab="Milliseconds")
 ```
+
+Github repository is located here:
+
+https://github.com/bschetzsle/STATS230
+
