@@ -1,0 +1,34 @@
+---
+title: "Homework1"
+author: "Brian Schetzsle"
+date: "1/13/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("R/Homework1.R", local = knitr::knit_global())
+library(microbenchmark)
+```
+
+I first randomly populate three somewhat large matrices and a vector.
+
+```{r}
+A = matrix(sample(-20:20, 600, replace=TRUE), nrow=20, ncol=30)
+B = matrix(sample(-20:20, 900, replace=TRUE), nrow=30, ncol=30)
+x = matrix(sample(-20:20, 30, replace=TRUE), nrow=30, ncol=1)
+
+```
+
+```{r echo=FALSE}
+result = matrix_prod(A,B,x,1)
+result = matrix_prod(A,B,x,2)
+```
+
+The results of the benchmark trials are below. Method 1, which evaluates AB first and then multiplies x, was show in class to be more computationally intenstive and this is reflected in the higher average compute times than method 2, which first calculates Bx and then multiplies A. Notice the variation in execution times. The matrices do not change between trials so I suspect other things my computer is doing during these trials affect execution times. Still, method 2 is clearly faster.
+
+```{r}
+result = microbenchmark(matrix_prod(A,B,x,1), matrix_prod(A,B,x,2))
+
+boxplot(result, main="Benchmark Result", names=c("1", "2"), xlab="Method", ylab="Milliseconds")
+```
