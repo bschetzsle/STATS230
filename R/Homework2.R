@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #'Simulate Multivariate Normal using Cholesky Decomposition of Covariance Matrix
+=======
+#'Multiply three matrices
+>>>>>>> 72310dfd1d4c9607639f881416dd447aebaea816
 #'
 #' @param N the number of samples to generate from the MVN
 #' @param mu an nx1 mean vector
@@ -9,16 +13,24 @@
 #' matrix_prod(N=10, mu, Sigma))
 
 cholesky_mvn = function(N, mu, Sigma){
+<<<<<<< HEAD
   n = dim(mu)[1]
   #get the cholesky decomposition of Sigma
   L = chol(Sigma)
   #generate N samples of multivariate normals
   Z = sapply(1:N, function(x){rnorm(n,0,1)})
   #transform Z to get desired multivariate normal samples
+=======
+
+  n = dim(mu)[1]
+  L = chol(Sigma)
+  Z = sapply(1:N, function(x){rnorm(n,0,1)})
+>>>>>>> 72310dfd1d4c9607639f881416dd447aebaea816
   X = apply(Z, 2, function(z){mu + t(L) %*% z})
   return(t(X))
 }
 
+<<<<<<< HEAD
 #'Estimate OLS regression coefficients using QR decomposition
 #'
 #' @param Y the response vector
@@ -45,3 +57,5 @@ SVD_regression = function(Y, X){
   return(SVD_beta)
 }
 
+=======
+>>>>>>> 72310dfd1d4c9607639f881416dd447aebaea816

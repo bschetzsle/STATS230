@@ -97,7 +97,6 @@ The regression using SVD decomposition is faster than QR decomposition, which is
 \qquad
 
 
-
 Github repository is located here:
 
 https://github.com/bschetzsle/STATS230
