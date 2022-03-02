@@ -1,0 +1,118 @@
+---
+title: "Homework3"
+author: "Brian Schetzsle"
+date: "3/2/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("R/Homework3.R", local = knitr::knit_global())
+library(mvtnorm)
+library(kableExtra)
+library(microbenchmark)
+```
+
+# Question 1
+
+```{r}
+#load the data and scale appropriately (do not scale categorical variables)
+data = read.csv("SAheart.data", sep=",")
+Y = data$chd
+X = cbind("intercept"=rep(1, dim(data)[1]), data[,2:10])
+X$famhist = ifelse(X$famhist=="Present", 1, 0)
+X$sbp = scale(X$sbp)
+X$tobacco = scale(X$tobacco)
+X$ldl = scale(X$ldl)
+X$adiposity = scale(X$adiposity)
+X$typea = scale(X$typea)
+X$obesity = scale(X$obesity)
+X$alcohol = scale(X$alcohol)
+X$age = scale(X$age)
+X = as.matrix(X)
+
+#choose an initial beta vector to start the algorithm
+beta0 = matrix(rep(0,dim(X)[2]),ncol=1)
+
+result_GD = logistic_regression(X, Y, beta0, alpha0=0.001, method="GD")
+result_NR = logistic_regression(X, Y, beta0, alpha0=0.001, method="NR")
+
+plot(1:length(result_GD$ll),result_GD$ll,type="l", main="Log-likelihood over Iterations", 
+     xlab="Iteration", ylab="Log-likelihood")
+lines(1:length(result_NR$ll),result_NR$ll,type="l",col="red")
+legend(200,-280,legend=c("Gradient Descent","Newton-Raphson"),lty=1,col=c("black","red"))
+```
+
+Above is a graph of the log-likelihood of visited $\beta$ coefficient vectors. The Newton-Raphson algorithm converged within 6 iterations while Gradient Descent exhausted its 400 maximum iterations (but wound up at a log-likelihood almost identical to Newton-Raphson).
+
+```{r}
+result_benchmark = microbenchmark(logistic_regression(X, Y, beta0, alpha0=0.001, method="GD"), 
+                                  logistic_regression(X, Y, beta0, alpha0=0.001, method="NR"))
+boxplot(result_benchmark, main="Benchmark Result", names=c("Gradient Descent", "Newton-Raphson"), xlab="Method", ylab="Milliseconds")
+```
+
+Above are the execution times of many iterations of the two optimization techniques. Newton-Raphson completes much more quickly, owing to its quick convergence.
+
+# Question 2
+
+```{r}
+result_EM = EM_func(6,4,55,35,0.4,0.4,0.2,100)
+result_EM
+```
+
+According to the EM algorithm, the most likely distribution of alleles in the population according to the Hardy-Weinburg equilibrium model is $p_{A}=$ `r result_EM[1]`, $p_{B}=$ `r result_EM[2]` and $p_{O}=$ `r result_EM[3]`.
+
+
+# Question 3
+
+```{r}
+P = matrix(c(0.98, 0.02, 0.05, 0.95), ncol=2, byrow=TRUE)
+E = matrix(c(rep(1/6, 6), c(1/10, 1/10, 1/2, 1/10, 1/10, 1/10)), nrow=2, byrow=TRUE)
+pi = c(1/2,1/2)
+
+result = simulate_HMM(P, E, pi, 100)
+Y = result$Y
+X = result$X
+gamma = result$gamma
+
+plot(1:100,Y, col="red", type="l", main="Hidden and Observed States",ylab="State",xlab="Time")
+lines(1:100,X, col="blue")
+legend(70,5,legend=c("Observed","Hidden"),col=c("red","blue"),lty=1)
+```
+
+Above are the hidden and observed states of a simulated HMM. The emission probabilities are similar enough that it is not obvious which hidden state the model is in. If the model is in hidden state 2, we would expect to see more 3s but by chance may see none.
+
+```{r}
+plot(1:100,ifelse(X==1,1,0),type="l", main="Actual Hidden States versus Predicted", ylab="State", xlab="Time")
+lines(gamma[,1], col="red")
+legend(70,0.5,legend=c("Actual","Predicted"),col=c("black","red"),lty=1)
+```
+
+Above is the actual hidden states used to generate the observed states. The red line is the predicted state at each time point given all observed data, as well as transition, starting and emission probabilities. The forward and backward algorithms are able to recover a crude approximation of the underlying hidden state and deviations are due to random chance.
+
+```{r}
+result = BW(Y)
+
+rownames(result$E) = c("Fair","Loaded")
+colnames(result$E) = c("1","2","3","4","5","6")
+rownames(result$P) = c("1","2")
+colnames(result$P) = c("1","2")
+rownames(result$pi) = c("1","2")
+
+
+kable(result$E, "html", digits=3, caption="Emission Probabilities")
+kable(result$P, digits=3, caption="Transition Probabilities")
+kable(result$pi, digits=3, caption="Starting Probabilities")
+
+```
+
+The resulting transition, emission and starting probability matrices do not look like the actual matrices used to generate the data. However, the log-likelihood of the observed data under this model is comparable to the log-likelihood under the true model. It appears that the Baum-Welsh Algorithm can easily get stuck in local optimums.
+
+\qquad
+\qquad
+
+
+Github repository is located here:
+
+https://github.com/bschetzsle/STATS230
+
