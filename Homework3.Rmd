@@ -15,7 +15,7 @@ library(microbenchmark)
 
 # Question 1
 
-```{r}
+```{r echo=FALSE}
 #load the data and scale appropriately (do not scale categorical variables)
 data = read.csv("SAheart.data", sep=",")
 Y = data$chd
@@ -45,7 +45,7 @@ legend(200,-280,legend=c("Gradient Descent","Newton-Raphson"),lty=1,col=c("black
 
 Above is a graph of the log-likelihood of visited $\beta$ coefficient vectors. The Newton-Raphson algorithm converged within 6 iterations while Gradient Descent exhausted its 400 maximum iterations (but wound up at a log-likelihood almost identical to Newton-Raphson).
 
-```{r}
+```{r echo=FALSE}
 result_benchmark = microbenchmark(logistic_regression(X, Y, beta0, alpha0=0.001, method="GD"), 
                                   logistic_regression(X, Y, beta0, alpha0=0.001, method="NR"))
 boxplot(result_benchmark, main="Benchmark Result", names=c("Gradient Descent", "Newton-Raphson"), xlab="Method", ylab="Milliseconds")
@@ -55,9 +55,11 @@ Above are the execution times of many iterations of the two optimization techniq
 
 # Question 2
 
-```{r}
+```{r echo=FALSE}
 result_EM = EM_func(6,4,55,35,0.4,0.4,0.2,100)
-result_EM
+
+colnames(result_EM) = c("pA","pB","pO")
+kable(result_EM, "html", digits=3, caption="Maximum Likelihood Population Proportions")
 ```
 
 According to the EM algorithm, the most likely distribution of alleles in the population according to the Hardy-Weinburg equilibrium model is $p_{A}=$ `r result_EM[1]`, $p_{B}=$ `r result_EM[2]` and $p_{O}=$ `r result_EM[3]`.
@@ -65,7 +67,7 @@ According to the EM algorithm, the most likely distribution of alleles in the po
 
 # Question 3
 
-```{r}
+```{r echo=FALSE}
 P = matrix(c(0.98, 0.02, 0.05, 0.95), ncol=2, byrow=TRUE)
 E = matrix(c(rep(1/6, 6), c(1/10, 1/10, 1/2, 1/10, 1/10, 1/10)), nrow=2, byrow=TRUE)
 pi = c(1/2,1/2)
@@ -82,15 +84,15 @@ legend(70,5,legend=c("Observed","Hidden"),col=c("red","blue"),lty=1)
 
 Above are the hidden and observed states of a simulated HMM. The emission probabilities are similar enough that it is not obvious which hidden state the model is in. If the model is in hidden state 2, we would expect to see more 3s but by chance may see none.
 
-```{r}
-plot(1:100,ifelse(X==1,1,0),type="l", main="Actual Hidden States versus Predicted", ylab="State", xlab="Time")
+```{r echo=FALSE}
+plot(1:100,ifelse(X==1,1,0),type="l", main="Actual Hidden States versus Predicted, X==1", ylab="Probability", xlab="Time")
 lines(gamma[,1], col="red")
 legend(70,0.5,legend=c("Actual","Predicted"),col=c("black","red"),lty=1)
 ```
 
 Above is the actual hidden states used to generate the observed states. The red line is the predicted state at each time point given all observed data, as well as transition, starting and emission probabilities. The forward and backward algorithms are able to recover a crude approximation of the underlying hidden state and deviations are due to random chance.
 
-```{r}
+```{r echo=FALSE}
 result = BW(Y)
 
 rownames(result$E) = c("Fair","Loaded")
@@ -100,13 +102,14 @@ colnames(result$P) = c("1","2")
 rownames(result$pi) = c("1","2")
 
 
-kable(result$E, "html", digits=3, caption="Emission Probabilities")
+kable(result$E, digits=3, caption="Emission Probabilities")
 kable(result$P, digits=3, caption="Transition Probabilities")
 kable(result$pi, digits=3, caption="Starting Probabilities")
 
+plot(1:100, result$ll, main="log(P(Y))", xlab="Iteration", ylab="log-likelihood", type="l")
 ```
 
-The resulting transition, emission and starting probability matrices do not look like the actual matrices used to generate the data. However, the log-likelihood of the observed data under this model is comparable to the log-likelihood under the true model. It appears that the Baum-Welsh Algorithm can easily get stuck in local optimums.
+The resulting transition, emission and starting probability matrices do not look like the actual matrices used to generate the data. The log-likelihood of the data does increase over iterations of the algorithm, so Baum-Welsh does look like it is doing some optimization. However, it seems to have gotten stuck in a local maximum. I think that this problem in particular, with the emission matrix looking similar for the two hidden states, makes it difficult for this algorithm to tease out nuance.
 
 \qquad
 \qquad

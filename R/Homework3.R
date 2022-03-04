@@ -81,7 +81,7 @@ EM_func = function(nA, nAB, nB, nO, pA, pB, pO, maxit=100){
     pB = (2*mBB+mBO+nAB)/(2*n)
     pO = (2*nO+mAO+mBO)/(2*n)
   }
-  return(c(pA,pB,pO))
+  return(matrix(c(pA,pB,pO), nrow=1))
 }
 
 
